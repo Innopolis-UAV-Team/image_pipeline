@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(image_view)
+add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS camera_calibration_parsers cv_bridge dynamic_reconfigure image_transport message_filters message_generation nodelet rosconsole roscpp std_srvs stereo_msgs)
 generate_dynamic_reconfigure_options(cfg/ImageView.cfg)

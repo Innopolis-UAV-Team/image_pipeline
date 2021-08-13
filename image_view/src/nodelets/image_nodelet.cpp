@@ -101,6 +101,8 @@ class ImageNodelet : public nodelet::Nodelet
   
   std::string window_name_;
   bool autosize_;
+  bool fullscreen;
+
   boost::format filename_format_;
   int count_;
 
@@ -135,6 +137,7 @@ ImageNodelet::ImageNodelet()
 
 ImageNodelet::~ImageNodelet()
 {
+  
   if (window_thread_.joinable())
   {
     window_thread_.interrupt();
@@ -170,7 +173,8 @@ void ImageNodelet::onInit()
   local_nh.param("window_name", window_name_, topic);
 
   local_nh.param("autosize", autosize_, false);
-  
+  local_nh.param("fullscreen", fullscreen, false);
+
   std::string format_string;
   local_nh.param("filename_format", format_string, std::string("frame%04i.jpg"));
   filename_format_.parse(format_string);
@@ -284,8 +288,16 @@ void ImageNodelet::mouseCb(int event, int x, int y, int flags, void* param)
 
 void ImageNodelet::windowThread()
 {
-  cv::namedWindow(window_name_, autosize_ ? cv::WND_PROP_AUTOSIZE : 0);
   cv::setMouseCallback(window_name_, &ImageNodelet::mouseCb, this);
+  
+  if(fullscreen == true)
+    {
+      cv::namedWindow(window_name_,cv::WINDOW_NORMAL);
+      cv::setWindowProperty(window_name_, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+    }
+    else{
+        cv::namedWindow(window_name_, autosize_ ? cv::WINDOW_AUTOSIZE : 0);
+    }
 
   try
   {

@@ -49,6 +49,9 @@ class DisparityNodelet : public nodelet::Nodelet
   std::string window_name_;
   ros::Subscriber sub_;
   cv::Mat_<cv::Vec3b> disparity_color_;
+
+  bool fullscreen;
+
   bool initialized;
   
   virtual void onInit();
@@ -81,7 +84,8 @@ void DisparityNodelet::onInit()
 
   bool autosize;
   local_nh.param("autosize", autosize, false);
-
+  local_nh.param("fullscreen", fullscreen, false);
+  
   //cv::namedWindow(window_name_, autosize ? cv::WND_PROP_AUTOSIZE : 0);
 #if CV_MAJOR_VERSION ==2
   // Start the OpenCV window thread so we don't have to waitKey() somewhere
@@ -110,6 +114,10 @@ void DisparityNodelet::imageCb(const stereo_msgs::DisparityImageConstPtr& msg)
   
   if(!initialized) {
     cv::namedWindow(window_name_, false ? cv::WND_PROP_AUTOSIZE : 0);
+    if(fullscreen == true)
+    {
+    cv::setWindowProperty(window_name_, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+    }
     initialized = true;
   }
   // Colormap and display the disparity image
