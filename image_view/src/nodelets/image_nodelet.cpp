@@ -292,11 +292,11 @@ void ImageNodelet::windowThread()
   cv::setMouseCallback(window_name_, &ImageNodelet::mouseCb, this);
   
   if(fullscreen == true)
-    {
+  {
       
       // Changed from WINDOW_NORMAL to WINDOW_FREERATIO, documentation: https://docs.opencv.org/4.5.1/d7/dfc/group__highgui.html#ga5afdf8410934fd099df85c75b2e0888b
       // Source: https://answers.opencv.org/question/198479/display-a-streamed-video-in-full-screen-opencv3/
-      cv::namedWindow(window_name_,cv::WINDOW_FREERATIO);
+      cv::namedWindow(window_name_, cv::WINDOW_FREERATIO);
       cv::setWindowProperty(window_name_, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
     }
     else{
@@ -314,12 +314,13 @@ void ImageNodelet::windowThread()
     while (ros::ok())
     {
       cv::Mat image(queued_image_.pop());
-
-      cv::Mat resized_up(image);
+      
       // Resize the image
-      cv::resize(image, resized_up, cv::Size(width, height), cv::INTER_LINEAR);
-      cv::imshow(window_name_, resized_up);
-      shown_image_.set(resized_up);
+      if(fullscreen == true)
+        cv::resize(image, image, cv::Size(width, height), cv::INTER_LINEAR);
+        
+      cv::imshow(window_name_, image);
+      shown_image_.set(image);
       cv::waitKey(1);
 
       if (cv::getWindowProperty(window_name_, 1) < 0)
