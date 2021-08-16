@@ -47,9 +47,30 @@
 #include <boost/format.hpp>
 #include <X11/Xlib.h>
 
-
 namespace image_view {
 
+// Source: https://stackoverflow.com/questions/28562401/resize-an-image-to-a-square-but-keep-aspect-ratio-c-opencv
+cv::Mat resizeKeepAspectRatio(const cv::Mat &input, const cv::Size &dstSize, const cv::Scalar &bgcolor)
+{
+    cv::Mat output;
+
+    double h1 = dstSize.width * (input.rows/(double)input.cols);
+    double w2 = dstSize.height * (input.cols/(double)input.rows);
+    if( h1 <= dstSize.height) {
+        cv::resize( input, output, cv::Size(dstSize.width, h1));
+    } else {
+        cv::resize( input, output, cv::Size(w2, dstSize.height));
+    }
+
+    int top = (dstSize.height-output.rows) / 2;
+    int down = (dstSize.height-output.rows+1) / 2;
+    int left = (dstSize.width - output.cols) / 2;
+    int right = (dstSize.width - output.cols+1) / 2;
+
+    cv::copyMakeBorder(output, output, top, down, left, right, cv::BORDER_CONSTANT, bgcolor );
+
+    return output;
+}
 class ThreadSafeImage
 {
   boost::mutex mutex_;
@@ -314,11 +335,10 @@ void ImageNodelet::windowThread()
     while (ros::ok())
     {
       cv::Mat image(queued_image_.pop());
-      
       // Resize the image
       if(fullscreen == true)
-        cv::resize(image, image, cv::Size(width, height), cv::INTER_LINEAR);
-        
+        image = image_view::resizeKeepAspectRatio(image, cv::Size(width, height), cv::Scalar(0));
+      
       cv::imshow(window_name_, image);
       shown_image_.set(image);
       cv::waitKey(1);
